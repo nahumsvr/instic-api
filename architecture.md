@@ -36,9 +36,23 @@ src/
 │   ├── auth.controller.ts # Endpoints de Auth.
 │   └── auth.service.ts    # Lógica de Auth y firma de Tokens.
 └── users/                 # Módulo de Usuarios.
-    ├── dto/               # DTOs de creación y actualización.
-    ├── entities/          # Entidad TypeORM de Usuario.
-    ├── enums/             # Enums utilizados (ej. Roles).
-    ├── users.controller.ts# Endpoints CRUD de Usuarios.
-    └── users.service.ts   # Lógica CRUD y búsqueda de Usuarios.
+│   ├── dto/               # DTOs de creación y actualización.
+│   ├── entities/          # Entidad TypeORM de Usuario.
+│   ├── enums/             # Enums utilizados (ej. Roles).
+│   ├── users.controller.ts# Endpoints CRUD de Usuarios.
+│   └── users.service.ts   # Lógica CRUD y búsqueda de Usuarios.
+└── locations/             # Módulo de Ubicaciones (Gestión de Tiendas y Almacenes).
+│   ├── dto/               # DTOs de creación, actualización y respuestas.
+│   ├── entities/          # Entidad TypeORM de Ubicación.
+│   ├── enums/             # Enums utilizados (ej. Tipo de Ubicación, Estado).
+│   ├── locations.controller.ts # Endpoints de Ubicaciones y sus inventarios.
+│   └── locations.service.ts    # Lógica de negocio de Ubicaciones.
+├── inventory/             # Módulo de Inventario.
+│   ├── entities/          # Entidad TypeORM de Inventario.
+│   ├── inventory.controller.ts # Endpoints CRUD de Inventario.
+│   └── inventory.service.ts    # Lógica CRUD de Inventario.
+└── articles/              # Módulo de Artículos.
+    ├── entities/          # Entidad TypeORM de Artículo.
+    ├── articles.controller.ts # Endpoints CRUD de Artículos.
+    └── articles.service.ts    # Lógica CRUD de Artículos.
 ```

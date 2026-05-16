@@ -6,6 +6,9 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { User } from './users/entities/user.entity';
 import { UsersModule } from './users/users.module';
+import { LocationsModule } from './locations/locations.module';
+import { InventoryModule } from './inventory/inventory.module';
+import { ArticlesModule } from './articles/articles.module';
 
 @Module({
   imports: [
@@ -23,11 +26,15 @@ import { UsersModule } from './users/users.module';
         password: configService.get<string>('POSTGRES_PASSWORD'),
         database: configService.get<string>('POSTGRES_DB'),
         entities: [User],
+        autoLoadEntities: true,
         synchronize: true, // Auto create/update tables (dev only)
       }),
     }),
     AuthModule,
     UsersModule,
+    LocationsModule,
+    InventoryModule,
+    ArticlesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
