@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Role } from '../enums/role.enum';
 
 @Entity('users')
@@ -10,7 +16,7 @@ export class User {
   username: string;
 
   @Column()
-  passwordHash: string;
+  password: string;
 
   @Column({
     type: 'enum',

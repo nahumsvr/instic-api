@@ -13,12 +13,12 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const user = await this.usersService.findByUsername(loginDto.username);
 
-    if (!user || user.passwordHash !== loginDto.passwordHash) {
+    if (!user || user.password !== loginDto.password) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
     const payload = { sub: user.id, username: user.username, role: user.role };
-    
+
     return {
       message: 'Inicio de sesión exitoso',
       access_token: await this.jwtService.signAsync(payload),
