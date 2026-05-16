@@ -305,6 +305,10 @@ export class MovementsService {
       qb.andWhere('movement.tipo = :type', { type: query.type });
     }
 
+    if (query.status) {
+      qb.andWhere('movement.estado = :status', { status: query.status });
+    }
+
     if (query.locationId) {
       qb.andWhere('(movement.origin_location_id = :locId OR movement.destination_location_id = :locId)', { locId: query.locationId });
     }
