@@ -60,4 +60,10 @@ src/
     ├── entities/          # Entidad TypeORM de Orden.
     ├── orders.controller.ts # Endpoints CRUD de Órdenes.
     └── orders.service.ts    # Lógica CRUD de Órdenes.
+└── movements/             # Módulo de Movimientos y Transacciones.
+    ├── dto/               # DTOs de entradas, salidas y transferencias.
+    ├── entities/          # Entidad TypeORM de Movimiento.
+    ├── enums/             # Enums de tipo de movimiento y estado.
+    ├── movements.controller.ts # Endpoints de registro y consulta.
+    └── movements.service.ts    # Lógica transaccional de movimientos e inventario.
 ```
