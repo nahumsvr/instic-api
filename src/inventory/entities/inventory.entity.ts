@@ -10,6 +10,12 @@ export class Inventory {
   @Column({ type: 'int', default: 0 })
   cantidad_actual: number;
 
+  @Column({ type: 'int', default: 0 })
+  stock_minimo: number;
+
+  @Column({ type: 'int', default: 0 })
+  stock_maximo: number;
+
   @UpdateDateColumn()
   ultima_actualizacion: Date;
 
