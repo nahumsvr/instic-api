@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { QueryArticleDto } from './dto/query-article.dto';
@@ -24,9 +28,13 @@ export class ArticlesService {
   ) {}
 
   async create(createArticleDto: CreateArticleDto) {
-    const existing = await this.articleRepository.findOne({ where: { codigo: createArticleDto.code } });
+    const existing = await this.articleRepository.findOne({
+      where: { codigo: createArticleDto.code },
+    });
     if (existing) {
-      throw new ConflictException(`El artículo con el código ${createArticleDto.code} ya existe.`);
+      throw new ConflictException(
+        `El artículo con el código ${createArticleDto.code} ya existe.`,
+      );
     }
 
     const article = this.articleRepository.create({
@@ -41,12 +49,19 @@ export class ArticlesService {
 
     const savedArticle = await this.articleRepository.save(article);
 
-    if (createArticleDto.stockConfigs && createArticleDto.stockConfigs.length > 0) {
+    if (
+      createArticleDto.stockConfigs &&
+      createArticleDto.stockConfigs.length > 0
+    ) {
       const inventories: Inventory[] = [];
       for (const config of createArticleDto.stockConfigs) {
-        const location = await this.locationRepository.findOne({ where: { id_ubicacion: config.locationId } });
+        const location = await this.locationRepository.findOne({
+          where: { id_ubicacion: config.locationId },
+        });
         if (!location) {
-          throw new NotFoundException(`La ubicación con ID ${config.locationId} no existe.`);
+          throw new NotFoundException(
+            `La ubicación con ID ${config.locationId} no existe.`,
+          );
         }
         const inventory = this.inventoryRepository.create({
           article: savedArticle,
@@ -77,12 +92,14 @@ export class ArticlesService {
     if (queryDto?.search) {
       queryBuilder.andWhere(
         '(article.nombre ILIKE :search OR article.codigo ILIKE :search)',
-        { search: `%${queryDto.search}%` }
+        { search: `%${queryDto.search}%` },
       );
     }
 
     if (queryDto?.category) {
-      queryBuilder.andWhere('article.category = :category', { category: queryDto.category });
+      queryBuilder.andWhere('article.category = :category', {
+        category: queryDto.category,
+      });
     }
 
     return await queryBuilder.getMany();
@@ -91,11 +108,18 @@ export class ArticlesService {
   async findOne(id: number) {
     const article = await this.articleRepository.findOne({
       where: { id_articulo: id, is_active: true },
-      relations: ['inventarios', 'inventarios.location', 'demandas', 'demandas.location'],
+      relations: [
+        'inventarios',
+        'inventarios.location',
+        'demandas',
+        'demandas.location',
+      ],
     });
 
     if (!article) {
-      throw new NotFoundException(`El artículo con ID ${id} no fue encontrado o está inactivo.`);
+      throw new NotFoundException(
+        `El artículo con ID ${id} no fue encontrado o está inactivo.`,
+      );
     }
 
     return article;
@@ -105,20 +129,30 @@ export class ArticlesService {
     const article = await this.findOne(id);
 
     if (updateArticleDto.code && updateArticleDto.code !== article.codigo) {
-      const existing = await this.articleRepository.findOne({ where: { codigo: updateArticleDto.code } });
+      const existing = await this.articleRepository.findOne({
+        where: { codigo: updateArticleDto.code },
+      });
       if (existing) {
-        throw new ConflictException(`El artículo con el código ${updateArticleDto.code} ya existe.`);
+        throw new ConflictException(
+          `El artículo con el código ${updateArticleDto.code} ya existe.`,
+        );
       }
     }
 
     Object.assign(article, {
       ...(updateArticleDto.code && { codigo: updateArticleDto.code }),
       ...(updateArticleDto.name && { nombre: updateArticleDto.name }),
-      ...(updateArticleDto.description !== undefined && { description: updateArticleDto.description }),
+      ...(updateArticleDto.description !== undefined && {
+        description: updateArticleDto.description,
+      }),
       ...(updateArticleDto.category && { category: updateArticleDto.category }),
       ...(updateArticleDto.size && { size: updateArticleDto.size }),
-      ...(updateArticleDto.unitCost !== undefined && { costo_unitario: updateArticleDto.unitCost }),
-      ...(updateArticleDto.unitPrice !== undefined && { precio_unitario: updateArticleDto.unitPrice }),
+      ...(updateArticleDto.unitCost !== undefined && {
+        costo_unitario: updateArticleDto.unitCost,
+      }),
+      ...(updateArticleDto.unitPrice !== undefined && {
+        precio_unitario: updateArticleDto.unitPrice,
+      }),
     });
 
     await this.articleRepository.save(article);
@@ -152,10 +186,14 @@ export class ArticlesService {
 
   async registerDemand(id: number, demandDto: RegisterDemandDto) {
     const article = await this.findOne(id);
-    const location = await this.locationRepository.findOne({ where: { id_ubicacion: demandDto.locationId } });
+    const location = await this.locationRepository.findOne({
+      where: { id_ubicacion: demandDto.locationId },
+    });
 
     if (!location) {
-      throw new NotFoundException(`La ubicación con ID ${demandDto.locationId} no existe.`);
+      throw new NotFoundException(
+        `La ubicación con ID ${demandDto.locationId} no existe.`,
+      );
     }
 
     const demand = this.demandRepository.create({
@@ -170,13 +208,20 @@ export class ArticlesService {
 
     // Calcular pronóstico (Promedio Móvil Simple de los últimos 3 periodos por ubicación)
     const historical = await this.demandRepository.find({
-      where: { article: { id_articulo: id }, location: { id_ubicacion: demandDto.locationId } },
+      where: {
+        article: { id_articulo: id },
+        location: { id_ubicacion: demandDto.locationId },
+      },
       order: { year: 'DESC', month: 'DESC' },
       take: 3,
     });
 
-    const totalQuantity = historical.reduce((sum, record) => sum + record.quantity, 0);
-    const forecast = historical.length > 0 ? totalQuantity / historical.length : 0;
+    const totalQuantity = historical.reduce(
+      (sum, record) => sum + record.quantity,
+      0,
+    );
+    const forecast =
+      historical.length > 0 ? totalQuantity / historical.length : 0;
 
     return {
       message: 'Demanda registrada correctamente',
