@@ -10,6 +10,7 @@ Este documento describe la arquitectura general y el stack tecnológico utilizad
 - **ORM**: [TypeORM](https://typeorm.io/) - Framework ORM utilizado para interactuar con la base de datos PostgreSQL mediante TypeScript.
 - **Validación**: `class-validator` y `class-transformer` - Para la validación y transformación de datos en los DTOs (Data Transfer Objects).
 - **Autenticación**: JWT (JSON Web Tokens) - Utilizado para manejar las sesiones de manera _stateless_ a través del módulo `@nestjs/jwt`.
+- **Encriptación**: [Bcrypt](https://www.npmjs.com/package/bcrypt) - Utilizado para el hasheo de contraseñas.
 
 ## Arquitectura General
 

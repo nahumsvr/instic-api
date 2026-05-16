@@ -10,6 +10,7 @@ Este documento establece las reglas estrictas de código que deben seguirse dura
 ## 2. Acceso a Datos
 
 - **Uso Exclusivo de TypeORM**: Toda la interacción con la base de datos debe realizarse a través de TypeORM (Repositorios, QueryBuilders o métodos nativos del ORM). No se permite el uso directo de Prisma u otros ORMs en este proyecto, ni escribir consultas SQL en texto plano a menos que sea estrictamente necesario y justificado por rendimiento.
+- **Relaciones Completas**: Siempre se deben retornar todas las relaciones asociadas a una entidad al realizar consultas, a menos que el caso de uso exija explícitamente lo contrario.
 
 ## 3. Validación de Datos
 
@@ -20,6 +21,7 @@ Este documento establece las reglas estrictas de código que deben seguirse dura
 
 - **Excepciones de NestJS**: Se deben usar siempre las excepciones integradas de NestJS (ej. `NotFoundException`, `UnauthorizedException`, `BadRequestException`) en lugar de arrojar errores nativos genéricos (`throw new Error()`).
 - **Manejo Centralizado**: Cualquier excepción imprevista debe ser capturada y formateada adecuadamente, evitando exponer el _stack trace_ o detalles sensibles de la base de datos al cliente.
+- **Errores de Repositorio**: Siempre se deben capturar y manejar los errores del repositorio al trabajar con la base de datos (por ejemplo, restricciones de unicidad) y traducirlos a excepciones HTTP apropiadas (ej. `ConflictException`).
 
 ## 5. Estructura y Estilo
 
@@ -31,7 +33,8 @@ Este documento establece las reglas estrictas de código que deben seguirse dura
 ## 6. Seguridad
 
 - **Protección de Rutas**: Todas las rutas deben estar protegidas de acuerdo a su propósito. Si es privada, debe requerir `JwtAuthGuard`. Si requiere permisos específicos, debe usar `RolesGuard` con el decorador `@Roles()`.
-- **Protección de Datos Sensibles**: Nunca exponer contraseñas (ni siquiera sus hashes), tokens ni secretos en las respuestas de la API.
+- **Protección de Datos Sensibles**: Nunca se debe exponer información sensible (contraseñas, hashes, tokens o secretos) en las respuestas de la API. Los objetos devueltos al cliente deben sanitizarse siempre.
+- **Encriptación**: Se deben encriptar (hashear) datos críticos como las contraseñas antes de guardarlos en la base de datos, utilizando herramientas estándar (ej. `bcrypt`).
 
 ## 7. Controladores vs Servicios
 
