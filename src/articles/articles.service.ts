@@ -64,8 +64,15 @@ export class ArticlesService {
   }
 
   async findAll(queryDto?: QueryArticleDto) {
-    const queryBuilder = this.articleRepository.createQueryBuilder('article')
-      .where('article.is_active = :isActive', { isActive: true });
+    const queryBuilder = this.articleRepository.createQueryBuilder('article');
+
+    const status = queryDto?.status || 'active';
+    if (status === 'active') {
+      queryBuilder.where('article.is_active = :isActive', { isActive: true });
+    } else if (status === 'inactive') {
+      queryBuilder.where('article.is_active = :isActive', { isActive: false });
+    }
+    // if 'all', do not filter by is_active
 
     if (queryDto?.search) {
       queryBuilder.andWhere(
@@ -123,6 +130,24 @@ export class ArticlesService {
     article.is_active = false;
     await this.articleRepository.save(article);
     return { message: `El artículo con ID ${id} ha sido descontinuado.` };
+  }
+
+  async reactivate(id: number) {
+    const article = await this.articleRepository.findOne({
+      where: { id_articulo: id },
+    });
+
+    if (!article) {
+      throw new NotFoundException(`El artículo con ID ${id} no existe.`);
+    }
+
+    if (article.is_active) {
+      throw new ConflictException(`El artículo con ID ${id} ya está activo.`);
+    }
+
+    article.is_active = true;
+    await this.articleRepository.save(article);
+    return { message: `El artículo con ID ${id} ha sido reactivado.` };
   }
 
   async registerDemand(id: number, demandDto: RegisterDemandDto) {

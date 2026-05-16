@@ -1,4 +1,10 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsEnum } from 'class-validator';
+
+export enum ArticleStatusFilter {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  ALL = 'all',
+}
 
 export class QueryArticleDto {
   @IsString()
@@ -8,4 +14,8 @@ export class QueryArticleDto {
   @IsString()
   @IsOptional()
   category?: string;
+
+  @IsEnum(ArticleStatusFilter)
+  @IsOptional()
+  status?: ArticleStatusFilter;
 }

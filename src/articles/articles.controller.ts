@@ -44,6 +44,12 @@ export class ArticlesController {
     return this.articlesService.remove(+id);
   }
 
+  @Patch(':id/reactivate')
+  @Roles(Role.ADMIN, Role.MANAGER)
+  reactivate(@Param('id') id: string) {
+    return this.articlesService.reactivate(+id);
+  }
+
   @Post(':id/demand')
   @Roles(Role.ADMIN, Role.MANAGER)
   registerDemand(@Param('id') id: string, @Body() demandDto: RegisterDemandDto) {
