@@ -6,9 +6,13 @@ import { Movement } from './entities/movement.entity';
 import { Inventory } from '../inventory/entities/inventory.entity';
 import { Location } from '../locations/entities/location.entity';
 import { Article } from '../articles/entities/article.entity';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Movement, Inventory, Location, Article])],
+  imports: [
+    TypeOrmModule.forFeature([Movement, Inventory, Location, Article]),
+    JwtModule,
+  ],
   controllers: [MovementsController],
   providers: [MovementsService],
 })
