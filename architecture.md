@@ -51,8 +51,13 @@ src/
 │   ├── entities/          # Entidad TypeORM de Inventario.
 │   ├── inventory.controller.ts # Endpoints CRUD de Inventario.
 │   └── inventory.service.ts    # Lógica CRUD de Inventario.
-└── articles/              # Módulo de Artículos.
-    ├── entities/          # Entidad TypeORM de Artículo.
-    ├── articles.controller.ts # Endpoints CRUD de Artículos.
-    └── articles.service.ts    # Lógica CRUD de Artículos.
+├── articles/              # Módulo de Artículos.
+│   ├── entities/          # Entidad TypeORM de Artículo.
+│   ├── articles.controller.ts # Endpoints CRUD de Artículos.
+│   └── articles.service.ts    # Lógica CRUD de Artículos.
+└── orders/                # Módulo de Órdenes.
+    ├── dto/               # DTOs de creación y actualización.
+    ├── entities/          # Entidad TypeORM de Orden.
+    ├── orders.controller.ts # Endpoints CRUD de Órdenes.
+    └── orders.service.ts    # Lógica CRUD de Órdenes.
 ```
