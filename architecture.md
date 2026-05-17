@@ -55,15 +55,16 @@ src/
 │   ├── entities/          # Entidad TypeORM de Artículo.
 │   ├── articles.controller.ts # Endpoints CRUD de Artículos.
 │   └── articles.service.ts    # Lógica CRUD de Artículos.
-└── orders/                # Módulo de Órdenes.
-    ├── dto/               # DTOs de creación y actualización.
-    ├── entities/          # Entidad TypeORM de Orden.
-    ├── orders.controller.ts # Endpoints CRUD de Órdenes.
-    └── orders.service.ts    # Lógica CRUD de Órdenes.
+└── orders/                # Módulo de Órdenes y Alertas (Módulo 7, 8 y 9).
+    ├── dto/               # DTOs: create-order, update-order-state (usa MovementStatus compartido).
+    ├── entities/          # Entidad TypeORM de Orden (qr_code único, eta_days, estado).
+    ├── enums/             # (Obsoleto) order-status.enum.ts — el estado usa MovementStatus.
+    ├── orders.controller.ts # GET /alerts, POST /orders, GET /orders, GET /orders/:qrCode, PATCH /orders/:id/state.
+    └── orders.service.ts    # Lógica de alertas por severidad, generación de QR y transiciones de estado.
 └── movements/             # Módulo de Movimientos y Transacciones.
     ├── dto/               # DTOs de entradas, salidas y transferencias.
     ├── entities/          # Entidad TypeORM de Movimiento.
-    ├── enums/             # Enums de tipo de movimiento y estado.
+    ├── enums/             # MovementStatus (compartido con orders) y MovementType.
     ├── movements.controller.ts # Endpoints de registro y consulta.
     └── movements.service.ts    # Lógica transaccional de movimientos e inventario.
 ```
