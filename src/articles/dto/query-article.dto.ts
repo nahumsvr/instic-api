@@ -1,4 +1,5 @@
 import { IsOptional, IsString, IsEnum } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export enum ArticleStatusFilter {
   ACTIVE = 'active',
@@ -18,4 +19,8 @@ export class QueryArticleDto {
   @IsEnum(ArticleStatusFilter)
   @IsOptional()
   status?: ArticleStatusFilter;
+
+  @IsOptional()
+  @Type(() => Number)
+  locationId?: number;
 }

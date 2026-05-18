@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Req } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
@@ -21,9 +21,9 @@ export class ArticlesController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.MANAGER)
-  findAll(@Query() query: QueryArticleDto) {
-    return this.articlesService.findAll(query);
+  @Roles(Role.ADMIN, Role.MANAGER, Role.EMPLOYEE)
+  findAll(@Query() query: QueryArticleDto, @Req() req: any) {
+    return this.articlesService.findAll(query, req.user);
   }
 
   @Get(':id')

@@ -177,16 +177,20 @@ Registra un nuevo artículo en el catálogo.
 ---
 
 ### `GET /articles`
-Lista artículos con filtros opcionales.
+Lista el catálogo de artículos, resolviendo internamente la suma de inventarios y aplicando filtros de seguridad según el rol.
 
-- **Roles**: `ADMIN`, `MANAGER`
+- **Roles**: `ADMIN`, `MANAGER`, `EMPLOYEE`
 - **Query params**:
   | Param | Tipo | Descripción |
   |---|---|---|
   | `search` | string | Busca por nombre o código (ILIKE) |
+  | `locationId` | number | Si se envía, el `stock` refleja solo esa tienda. Si se omite, es el consolidado total |
   | `category` | string | Filtra por categoría exacta |
   | `status` | `active` \| `inactive` \| `all` | Por defecto: `active` |
-- **Respuesta**: Array de artículos que cumplen los filtros.
+- **Respuesta**: Array de artículos que cumplen los filtros, con el campo `stock` calculado.
+- **Comportamiento basado en Roles**:
+  - **ADMIN / MANAGER**: La respuesta incluye `costo_unitario` y `precio_unitario`.
+  - **EMPLOYEE**: Los campos `costo_unitario` y `precio_unitario` son eliminados automáticamente.
 
 ---
 

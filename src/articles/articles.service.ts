@@ -78,8 +78,19 @@ export class ArticlesService {
     return this.findOne(savedArticle.id_articulo);
   }
 
-  async findAll(queryDto?: QueryArticleDto) {
+  async findAll(queryDto?: QueryArticleDto, user?: any) {
     const queryBuilder = this.articleRepository.createQueryBuilder('article');
+
+    if (queryDto?.locationId) {
+      queryBuilder.leftJoinAndSelect(
+        'article.inventarios',
+        'inventario',
+        'inventario.location = :locationId',
+        { locationId: queryDto.locationId },
+      );
+    } else {
+      queryBuilder.leftJoinAndSelect('article.inventarios', 'inventario');
+    }
 
     const status = queryDto?.status || 'active';
     if (status === 'active') {
@@ -102,7 +113,28 @@ export class ArticlesService {
       });
     }
 
-    return await queryBuilder.getMany();
+    const articles = await queryBuilder.getMany();
+    const role = user?.role;
+
+    return articles.map((article) => {
+      let stock = 0;
+      if (article.inventarios) {
+        stock = article.inventarios.reduce(
+          (acc, inv) => acc + inv.cantidad_actual,
+          0,
+        );
+      }
+
+      const mappedArticle: any = { ...article, stock };
+      delete mappedArticle.inventarios;
+
+      if (role === 'EMPLOYEE') {
+        delete mappedArticle.costo_unitario;
+        delete mappedArticle.precio_unitario;
+      }
+
+      return mappedArticle;
+    });
   }
 
   async findOne(id: number) {
