@@ -29,7 +29,7 @@ import { OrdersModule } from './orders/orders.module';
         database: configService.get<string>('POSTGRES_DB'),
         entities: [User],
         autoLoadEntities: true,
-        synchronize: true, // Auto create/update tables (dev only)
+        synchronize: false, // Auto create/update tables (dev only)
       }),
     }),
     AuthModule,

@@ -3,7 +3,7 @@ version: '3.8'
 services:
   postgres_db:
     image: postgres:18-alpine
-    container_name: postgres_prod
+    container_name: postgres-prod
     environment:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -22,7 +22,8 @@ services:
     ports:
       - '80:3000' # Mapea el puerto 80 (HTTP) de la EC2 al 3000 de NestJS
     environment:
-      DB_HOST: postgres_db # Nombre del servicio de arriba
+      # Estas son las únicas variables que NestJS leerá
+      DB_HOST: postgres-db
       DB_PORT: 5432
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
