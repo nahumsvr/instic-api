@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  postgres_db:
+    image: postgres:15-alpine
+    container_name: postgres_prod
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - '127.0.0.1:5432:5432' # Solo accesible localmente desde la EC2 si necesitas auditar
+    restart: always
+
+  nestjs_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nestjs_api_prod
+    ports:
+      - '80:3000' # Mapea el puerto 80 (HTTP) de la EC2 al 3000 de NestJS
+    environment:
+      DB_HOST: postgres_db # Nombre del servicio de arriba
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DB}
+    depends_on:
+      - postgres_db
+    restart: always
+
+volumes:
+  pgdata:
