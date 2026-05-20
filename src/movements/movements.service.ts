@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { Movement } from './entities/movement.entity';
 import { Inventory } from '../inventory/entities/inventory.entity';
@@ -23,15 +28,22 @@ export class MovementsService {
     await queryRunner.startTransaction();
 
     try {
-      const article = await queryRunner.manager.findOne(Article, { where: { id_articulo: dto.articleId } });
+      const article = await queryRunner.manager.findOne(Article, {
+        where: { id_articulo: dto.articleId },
+      });
       if (!article) throw new NotFoundException('Article not found');
 
-      const destination = await queryRunner.manager.findOne(Location, { where: { id_ubicacion: dto.destinationId } });
-      if (!destination) throw new NotFoundException('Destination location not found');
+      const destination = await queryRunner.manager.findOne(Location, {
+        where: { id_ubicacion: dto.destinationId },
+      });
+      if (!destination)
+        throw new NotFoundException('Destination location not found');
 
       let origin: Location | null = null;
       if (dto.originId) {
-        origin = await queryRunner.manager.findOne(Location, { where: { id_ubicacion: dto.originId } });
+        origin = await queryRunner.manager.findOne(Location, {
+          where: { id_ubicacion: dto.originId },
+        });
         if (!origin) throw new NotFoundException('Origin location not found');
       }
 
@@ -39,7 +51,10 @@ export class MovementsService {
 
       if (status === MovementStatus.COMPLETED) {
         let inventory = await queryRunner.manager.findOne(Inventory, {
-          where: { location: { id_ubicacion: dto.destinationId }, article: { id_articulo: dto.articleId } },
+          where: {
+            location: { id_ubicacion: dto.destinationId },
+            article: { id_articulo: dto.articleId },
+          },
         });
 
         if (inventory) {
@@ -81,23 +96,33 @@ export class MovementsService {
     await queryRunner.startTransaction();
 
     try {
-      const article = await queryRunner.manager.findOne(Article, { where: { id_articulo: dto.articleId } });
+      const article = await queryRunner.manager.findOne(Article, {
+        where: { id_articulo: dto.articleId },
+      });
       if (!article) throw new NotFoundException('Article not found');
 
-      const origin = await queryRunner.manager.findOne(Location, { where: { id_ubicacion: dto.originId } });
+      const origin = await queryRunner.manager.findOne(Location, {
+        where: { id_ubicacion: dto.originId },
+      });
       if (!origin) throw new NotFoundException('Origin location not found');
 
       let destination: Location | null = null;
       if (dto.destinationId) {
-        destination = await queryRunner.manager.findOne(Location, { where: { id_ubicacion: dto.destinationId } });
-        if (!destination) throw new NotFoundException('Destination location not found');
+        destination = await queryRunner.manager.findOne(Location, {
+          where: { id_ubicacion: dto.destinationId },
+        });
+        if (!destination)
+          throw new NotFoundException('Destination location not found');
       }
 
       const status = dto.status || MovementStatus.COMPLETED;
 
       if (status === MovementStatus.COMPLETED) {
         const inventory = await queryRunner.manager.findOne(Inventory, {
-          where: { location: { id_ubicacion: dto.originId }, article: { id_articulo: dto.articleId } },
+          where: {
+            location: { id_ubicacion: dto.originId },
+            article: { id_articulo: dto.articleId },
+          },
         });
 
         if (!inventory || inventory.cantidad_actual < dto.quantity) {
@@ -134,35 +159,55 @@ export class MovementsService {
     await queryRunner.startTransaction();
 
     try {
-      const article = await queryRunner.manager.findOne(Article, { where: { id_articulo: dto.articleId } });
+      const article = await queryRunner.manager.findOne(Article, {
+        where: { id_articulo: dto.articleId },
+      });
       if (!article) throw new NotFoundException('Article not found');
 
-      const origin = await queryRunner.manager.findOne(Location, { where: { id_ubicacion: dto.originId } });
+      const origin = await queryRunner.manager.findOne(Location, {
+        where: { id_ubicacion: dto.originId },
+      });
       if (!origin) throw new NotFoundException('Origin location not found');
 
-      const destination = await queryRunner.manager.findOne(Location, { where: { id_ubicacion: dto.destinationId } });
-      if (!destination) throw new NotFoundException('Destination location not found');
+      const destination = await queryRunner.manager.findOne(Location, {
+        where: { id_ubicacion: dto.destinationId },
+      });
+      if (!destination)
+        throw new NotFoundException('Destination location not found');
 
       if (origin.id_ubicacion === destination.id_ubicacion) {
-        throw new BadRequestException('Origin and destination cannot be the same');
+        throw new BadRequestException(
+          'Origin and destination cannot be the same',
+        );
       }
 
       const status = dto.status || MovementStatus.COMPLETED;
 
       if (status === MovementStatus.COMPLETED) {
         const originInventory = await queryRunner.manager.findOne(Inventory, {
-          where: { location: { id_ubicacion: dto.originId }, article: { id_articulo: dto.articleId } },
+          where: {
+            location: { id_ubicacion: dto.originId },
+            article: { id_articulo: dto.articleId },
+          },
         });
 
-        if (!originInventory || originInventory.cantidad_actual < dto.quantity) {
-          throw new ConflictException('Insufficient stock in origin location for transfer');
+        if (
+          !originInventory ||
+          originInventory.cantidad_actual < dto.quantity
+        ) {
+          throw new ConflictException(
+            'Insufficient stock in origin location for transfer',
+          );
         }
 
         originInventory.cantidad_actual -= dto.quantity;
         await queryRunner.manager.save(originInventory);
 
         let destInventory = await queryRunner.manager.findOne(Inventory, {
-          where: { location: { id_ubicacion: dto.destinationId }, article: { id_articulo: dto.articleId } },
+          where: {
+            location: { id_ubicacion: dto.destinationId },
+            article: { id_articulo: dto.articleId },
+          },
         });
 
         if (destInventory) {
@@ -210,21 +255,31 @@ export class MovementsService {
       });
 
       if (!movement) throw new NotFoundException('Movement not found');
-      
+
       if (movement.estado === MovementStatus.CANCELLED) {
-        throw new ConflictException('Cannot change status of a cancelled movement');
+        throw new ConflictException(
+          'Cannot change status of a cancelled movement',
+        );
       }
-      
+
       if (movement.estado === MovementStatus.COMPLETED) {
-        throw new ConflictException('Cannot change status of an already completed movement');
+        throw new ConflictException(
+          'Cannot change status of an already completed movement',
+        );
       }
 
       // If we are transitioning TO COMPLETED, we must apply the inventory changes
       if (dto.status === MovementStatus.COMPLETED) {
         if (movement.tipo === MovementType.INPUT) {
-          if (!movement.destinationLocation) throw new ConflictException('Destination location is missing');
+          if (!movement.destinationLocation)
+            throw new ConflictException('Destination location is missing');
           let inventory = await queryRunner.manager.findOne(Inventory, {
-            where: { location: { id_ubicacion: movement.destinationLocation.id_ubicacion }, article: { id_articulo: movement.article.id_articulo } },
+            where: {
+              location: {
+                id_ubicacion: movement.destinationLocation.id_ubicacion,
+              },
+              article: { id_articulo: movement.article.id_articulo },
+            },
           });
 
           if (inventory) {
@@ -239,33 +294,53 @@ export class MovementsService {
             await queryRunner.manager.save(inventory);
           }
         } else if (movement.tipo === MovementType.OUTPUT) {
-          if (!movement.originLocation) throw new ConflictException('Origin location is missing');
+          if (!movement.originLocation)
+            throw new ConflictException('Origin location is missing');
           const inventory = await queryRunner.manager.findOne(Inventory, {
-            where: { location: { id_ubicacion: movement.originLocation.id_ubicacion }, article: { id_articulo: movement.article.id_articulo } },
+            where: {
+              location: { id_ubicacion: movement.originLocation.id_ubicacion },
+              article: { id_articulo: movement.article.id_articulo },
+            },
           });
 
           if (!inventory || inventory.cantidad_actual < movement.cantidad) {
-            throw new ConflictException('Insufficient stock for output completion');
+            throw new ConflictException(
+              'Insufficient stock for output completion',
+            );
           }
 
           inventory.cantidad_actual -= movement.cantidad;
           await queryRunner.manager.save(inventory);
         } else if (movement.tipo === MovementType.TRANSFER) {
-          if (!movement.originLocation || !movement.destinationLocation) throw new ConflictException('Origin or destination is missing');
-          
+          if (!movement.originLocation || !movement.destinationLocation)
+            throw new ConflictException('Origin or destination is missing');
+
           const originInventory = await queryRunner.manager.findOne(Inventory, {
-            where: { location: { id_ubicacion: movement.originLocation.id_ubicacion }, article: { id_articulo: movement.article.id_articulo } },
+            where: {
+              location: { id_ubicacion: movement.originLocation.id_ubicacion },
+              article: { id_articulo: movement.article.id_articulo },
+            },
           });
 
-          if (!originInventory || originInventory.cantidad_actual < movement.cantidad) {
-            throw new ConflictException('Insufficient stock in origin location for transfer completion');
+          if (
+            !originInventory ||
+            originInventory.cantidad_actual < movement.cantidad
+          ) {
+            throw new ConflictException(
+              'Insufficient stock in origin location for transfer completion',
+            );
           }
 
           originInventory.cantidad_actual -= movement.cantidad;
           await queryRunner.manager.save(originInventory);
 
           let destInventory = await queryRunner.manager.findOne(Inventory, {
-            where: { location: { id_ubicacion: movement.destinationLocation.id_ubicacion }, article: { id_articulo: movement.article.id_articulo } },
+            where: {
+              location: {
+                id_ubicacion: movement.destinationLocation.id_ubicacion,
+              },
+              article: { id_articulo: movement.article.id_articulo },
+            },
           });
 
           if (destInventory) {
@@ -296,7 +371,9 @@ export class MovementsService {
   }
 
   async findAll(query: QueryMovementDto) {
-    const qb = this.dataSource.getRepository(Movement).createQueryBuilder('movement')
+    const qb = this.dataSource
+      .getRepository(Movement)
+      .createQueryBuilder('movement')
       .leftJoinAndSelect('movement.article', 'article')
       .leftJoinAndSelect('movement.originLocation', 'origin')
       .leftJoinAndSelect('movement.destinationLocation', 'destination');
@@ -310,7 +387,10 @@ export class MovementsService {
     }
 
     if (query.locationId) {
-      qb.andWhere('(movement.origin_location_id = :locId OR movement.destination_location_id = :locId)', { locId: query.locationId });
+      qb.andWhere(
+        '(movement.origin_location_id = :locId OR movement.destination_location_id = :locId)',
+        { locId: query.locationId },
+      );
     }
 
     qb.orderBy('movement.fecha_movimiento', 'DESC');
@@ -329,25 +409,38 @@ export class MovementsService {
       });
 
       if (!movement) throw new NotFoundException('Movement not found');
-      if (movement.estado === MovementStatus.CANCELLED) throw new ConflictException('Movement is already cancelled');
+      if (movement.estado === MovementStatus.CANCELLED)
+        throw new ConflictException('Movement is already cancelled');
 
       // If the movement was never completed, we don't need to revert inventory
       if (movement.estado === MovementStatus.COMPLETED) {
         // Revert the operation based on type
         if (movement.tipo === MovementType.INPUT) {
-          if (!movement.destinationLocation) throw new ConflictException('Destination location is missing');
+          if (!movement.destinationLocation)
+            throw new ConflictException('Destination location is missing');
           const inventory = await queryRunner.manager.findOne(Inventory, {
-            where: { location: { id_ubicacion: movement.destinationLocation.id_ubicacion }, article: { id_articulo: movement.article.id_articulo } },
+            where: {
+              location: {
+                id_ubicacion: movement.destinationLocation.id_ubicacion,
+              },
+              article: { id_articulo: movement.article.id_articulo },
+            },
           });
           if (!inventory || inventory.cantidad_actual < movement.cantidad) {
-            throw new ConflictException('Cannot cancel INPUT: Destination location would have negative stock');
+            throw new ConflictException(
+              'Cannot cancel INPUT: Destination location would have negative stock',
+            );
           }
           inventory.cantidad_actual -= movement.cantidad;
           await queryRunner.manager.save(inventory);
         } else if (movement.tipo === MovementType.OUTPUT) {
-          if (!movement.originLocation) throw new ConflictException('Origin location is missing');
+          if (!movement.originLocation)
+            throw new ConflictException('Origin location is missing');
           let inventory = await queryRunner.manager.findOne(Inventory, {
-            where: { location: { id_ubicacion: movement.originLocation.id_ubicacion }, article: { id_articulo: movement.article.id_articulo } },
+            where: {
+              location: { id_ubicacion: movement.originLocation.id_ubicacion },
+              article: { id_articulo: movement.article.id_articulo },
+            },
           });
           if (inventory) {
             inventory.cantidad_actual += movement.cantidad;
@@ -360,10 +453,14 @@ export class MovementsService {
           }
           await queryRunner.manager.save(inventory);
         } else if (movement.tipo === MovementType.TRANSFER) {
-          if (!movement.originLocation || !movement.destinationLocation) throw new ConflictException('Origin or destination is missing');
+          if (!movement.originLocation || !movement.destinationLocation)
+            throw new ConflictException('Origin or destination is missing');
           // Revert origin: add back
           let originInventory = await queryRunner.manager.findOne(Inventory, {
-            where: { location: { id_ubicacion: movement.originLocation.id_ubicacion }, article: { id_articulo: movement.article.id_articulo } },
+            where: {
+              location: { id_ubicacion: movement.originLocation.id_ubicacion },
+              article: { id_articulo: movement.article.id_articulo },
+            },
           });
           if (originInventory) {
             originInventory.cantidad_actual += movement.cantidad;
@@ -378,10 +475,20 @@ export class MovementsService {
 
           // Revert destination: remove
           const destInventory = await queryRunner.manager.findOne(Inventory, {
-            where: { location: { id_ubicacion: movement.destinationLocation.id_ubicacion }, article: { id_articulo: movement.article.id_articulo } },
+            where: {
+              location: {
+                id_ubicacion: movement.destinationLocation.id_ubicacion,
+              },
+              article: { id_articulo: movement.article.id_articulo },
+            },
           });
-          if (!destInventory || destInventory.cantidad_actual < movement.cantidad) {
-            throw new ConflictException('Cannot cancel TRANSFER: Destination location would have negative stock');
+          if (
+            !destInventory ||
+            destInventory.cantidad_actual < movement.cantidad
+          ) {
+            throw new ConflictException(
+              'Cannot cancel TRANSFER: Destination location would have negative stock',
+            );
           }
           destInventory.cantidad_actual -= movement.cantidad;
           await queryRunner.manager.save(destInventory);

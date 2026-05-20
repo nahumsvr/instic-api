@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateInventoryDto } from './dto/create-inventory.dto';
@@ -23,11 +27,15 @@ export class InventoryService {
       });
       return await this.inventoryRepository.save(newInventory);
     } catch (error) {
-      if (error.code === '23503') { // Foreign key violation in PostgreSQL
+      if (error.code === '23503') {
+        // Foreign key violation in PostgreSQL
         throw new BadRequestException('La ubicación o el artículo no existen');
       }
-      if (error.code === '23505') { // Unique constraint violation
-        throw new BadRequestException('El inventario para esta ubicación y artículo ya existe');
+      if (error.code === '23505') {
+        // Unique constraint violation
+        throw new BadRequestException(
+          'El inventario para esta ubicación y artículo ya existe',
+        );
       }
       throw error;
     }

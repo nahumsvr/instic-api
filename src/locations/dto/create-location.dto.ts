@@ -1,4 +1,11 @@
-import { IsString, IsEnum, IsNumber, IsNotEmpty, Min, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsNumber,
+  IsNotEmpty,
+  Min,
+  IsOptional,
+} from 'class-validator';
 import { TipoUbicacion } from '../enums/ubicacion-tipo.enum';
 import { EstadoUbicacion } from '../enums/ubicacion-estado.enum';
 

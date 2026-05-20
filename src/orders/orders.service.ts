@@ -121,6 +121,21 @@ export class OrdersService {
         `Ubicación de destino con ID ${dto.destinationId} no encontrada.`,
       );
 
+    // Verificar si la ubicación de origen tiene el stock necesario para la orden
+    const inventory = await this.inventoryRepository.findOne({
+      where: {
+        article: { id_articulo: dto.articleId },
+        location: { id_ubicacion: dto.originId },
+      },
+    });
+
+    const stockActual = inventory ? Number(inventory.cantidad_actual) : 0;
+    if (stockActual < dto.quantity) {
+      throw new BadRequestException(
+        `La ubicación de origen no cuenta con stock suficiente. Stock disponible: ${stockActual}, solicitado: ${dto.quantity}.`,
+      );
+    }
+
     const qrCode = `ORD-${randomUUID().toUpperCase()}`;
 
     const order = this.orderRepository.create({
@@ -221,7 +236,7 @@ export class OrdersService {
 
     // ── Al completar la orden, incrementar inventario en el destino ────────
     if (dto.status === MovementStatus.COMPLETED) {
-      let inventoryRecord = await this.inventoryRepository.findOne({
+      const inventoryRecord = await this.inventoryRepository.findOne({
         where: {
           article: { id_articulo: order.article.id_articulo },
           location: { id_ubicacion: order.destination.id_ubicacion },

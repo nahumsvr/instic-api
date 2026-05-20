@@ -11,4 +11,4 @@ import { JwtModule } from '@nestjs/jwt';
   providers: [InventoryService],
   exports: [InventoryService],
 })
-export class InventoryModule { }
+export class InventoryModule {}

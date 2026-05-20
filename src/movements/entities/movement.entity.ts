@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { MovementType } from '../enums/movement-type.enum';
 import { MovementStatus } from '../enums/movement-status.enum';
 import { Article } from '../../articles/entities/article.entity';
