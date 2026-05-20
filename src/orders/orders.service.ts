@@ -234,19 +234,38 @@ export class OrdersService {
       order.eta_days = dto.etaDays;
     }
 
-    // ── Al completar la orden, incrementar inventario en el destino ────────
+    // ── Al completar la orden, restar inventario en el origen y sumar en el destino ──
     if (dto.status === MovementStatus.COMPLETED) {
-      const inventoryRecord = await this.inventoryRepository.findOne({
+      // 1. Verificar y restar stock en la ubicación de origen
+      const originInventory = await this.inventoryRepository.findOne({
+        where: {
+          article: { id_articulo: order.article.id_articulo },
+          location: { id_ubicacion: order.origin.id_ubicacion },
+        },
+      });
+
+      const stockOrigen = originInventory ? Number(originInventory.cantidad_actual) : 0;
+      if (stockOrigen < Number(order.cantidad)) {
+        throw new BadRequestException(
+          `No se puede completar la orden. La ubicación de origen no cuenta con suficiente stock. Stock disponible: ${stockOrigen}, solicitado: ${order.cantidad}.`,
+        );
+      }
+
+      originInventory!.cantidad_actual = stockOrigen - Number(order.cantidad);
+      await this.inventoryRepository.save(originInventory!);
+
+      // 2. Incrementar inventario en el destino
+      const destinationInventory = await this.inventoryRepository.findOne({
         where: {
           article: { id_articulo: order.article.id_articulo },
           location: { id_ubicacion: order.destination.id_ubicacion },
         },
       });
 
-      if (inventoryRecord) {
-        inventoryRecord.cantidad_actual =
-          Number(inventoryRecord.cantidad_actual) + Number(order.cantidad);
-        await this.inventoryRepository.save(inventoryRecord);
+      if (destinationInventory) {
+        destinationInventory.cantidad_actual =
+          Number(destinationInventory.cantidad_actual) + Number(order.cantidad);
+        await this.inventoryRepository.save(destinationInventory);
       } else {
         // El registro de inventario no existía todavía — lo creamos con la cantidad recibida
         const newRecord = this.inventoryRepository.create({

@@ -152,4 +152,110 @@ describe('OrdersService', () => {
       expect(mockOrderRepository.save).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('updateState', () => {
+    const article = { id_articulo: 1 };
+    const origin = { id_ubicacion: 2 };
+    const destination = { id_ubicacion: 3 };
+
+    const pendingOrder = {
+      id_orden: 1,
+      cantidad: 10,
+      estado: MovementStatus.PENDING,
+      article,
+      origin,
+      destination,
+    };
+
+    it('should throw NotFoundException if order is not found', async () => {
+      mockOrderRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.updateState(1, { status: MovementStatus.APPROVED, etaDays: 2 })).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw BadRequestException if order is already CANCELLED', async () => {
+      mockOrderRepository.findOne.mockResolvedValue({ ...pendingOrder, estado: MovementStatus.CANCELLED });
+
+      await expect(service.updateState(1, { status: MovementStatus.COMPLETED })).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException if order is already COMPLETED', async () => {
+      mockOrderRepository.findOne.mockResolvedValue({ ...pendingOrder, estado: MovementStatus.COMPLETED });
+
+      await expect(service.updateState(1, { status: MovementStatus.APPROVED, etaDays: 2 })).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException if origin has insufficient stock on COMPLETED', async () => {
+      const approvedOrder = { ...pendingOrder, estado: MovementStatus.APPROVED };
+      mockOrderRepository.findOne.mockResolvedValue(approvedOrder);
+      mockInventoryRepository.findOne.mockResolvedValue({ cantidad_actual: 5 });
+
+      const promise = service.updateState(1, { status: MovementStatus.COMPLETED });
+      await expect(promise).rejects.toThrow(BadRequestException);
+    });
+
+    it('should include descriptive message when origin stock is insufficient', async () => {
+      const approvedOrder = { ...pendingOrder, estado: MovementStatus.APPROVED };
+      mockOrderRepository.findOne.mockResolvedValue(approvedOrder);
+      mockInventoryRepository.findOne.mockResolvedValue({ cantidad_actual: 5 });
+
+      await expect(
+        service.updateState(1, { status: MovementStatus.COMPLETED }),
+      ).rejects.toThrow('No se puede completar la orden');
+    });
+
+    it('should throw BadRequestException if origin has no inventory record on COMPLETED', async () => {
+      mockOrderRepository.findOne.mockResolvedValue({ ...pendingOrder, estado: MovementStatus.APPROVED });
+      // No hay registro de inventario en el origen
+      mockInventoryRepository.findOne.mockResolvedValueOnce(null);
+
+      await expect(
+        service.updateState(1, { status: MovementStatus.COMPLETED }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should deduct origin and add destination inventory on COMPLETED (existing destination)', async () => {
+      mockOrderRepository.findOne.mockResolvedValue({ ...pendingOrder, estado: MovementStatus.APPROVED });
+
+      const originInv = { cantidad_actual: 20, save: jest.fn() };
+      const destInv = { cantidad_actual: 5, save: jest.fn() };
+
+      // Primera llamada: origen, segunda: destino
+      mockInventoryRepository.findOne
+        .mockResolvedValueOnce(originInv)
+        .mockResolvedValueOnce(destInv);
+      mockInventoryRepository.save = jest.fn().mockResolvedValue(undefined);
+      mockOrderRepository.save.mockResolvedValue({ ...pendingOrder, estado: MovementStatus.COMPLETED });
+
+      await service.updateState(1, { status: MovementStatus.COMPLETED });
+
+      expect(mockInventoryRepository.save).toHaveBeenCalledTimes(2);
+      // Origen debe haber bajado de 20 a 10
+      expect(originInv.cantidad_actual).toBe(10);
+      // Destino debe haber subido de 5 a 15
+      expect(destInv.cantidad_actual).toBe(15);
+    });
+
+    it('should deduct origin and create destination inventory on COMPLETED (new destination)', async () => {
+      mockOrderRepository.findOne.mockResolvedValue({ ...pendingOrder, estado: MovementStatus.APPROVED });
+
+      const originInv = { cantidad_actual: 20 };
+      const newDestRecord = { cantidad_actual: 10 };
+
+      mockInventoryRepository.findOne
+        .mockResolvedValueOnce(originInv)  // origen
+        .mockResolvedValueOnce(null);       // destino no existe
+      mockInventoryRepository.save = jest.fn().mockResolvedValue(undefined);
+      mockInventoryRepository.create = jest.fn().mockReturnValue(newDestRecord);
+      mockOrderRepository.save.mockResolvedValue({ ...pendingOrder, estado: MovementStatus.COMPLETED });
+
+      await service.updateState(1, { status: MovementStatus.COMPLETED });
+
+      expect(mockInventoryRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ cantidad_actual: 10 }),
+      );
+      expect(mockInventoryRepository.save).toHaveBeenCalledTimes(2);
+    });
+  });
 });
+
