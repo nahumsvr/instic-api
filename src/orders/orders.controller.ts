@@ -58,7 +58,7 @@ export class OrdersController {
   // ─── PATCH /orders/:id/state ──────────────────────────────────────────────
 
   @Patch('orders/:id/state')
-  @Roles(Role.ADMIN, Role.MANAGER)
+  @Roles(Role.ADMIN, Role.MANAGER, Role.EMPLOYEE)
   updateState(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateOrderStateDto,

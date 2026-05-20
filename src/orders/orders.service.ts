@@ -84,7 +84,9 @@ export class OrdersService {
       ALTO: 1,
       MEDIO: 2,
     };
-    alerts.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
+    alerts.sort(
+      (a, b) => severityOrder[a.severity] - severityOrder[b.severity],
+    );
 
     return alerts;
   }
@@ -99,19 +101,25 @@ export class OrdersService {
       where: { id_articulo: dto.articleId, is_active: true },
     });
     if (!article)
-      throw new NotFoundException(`Artículo con ID ${dto.articleId} no encontrado.`);
+      throw new NotFoundException(
+        `Artículo con ID ${dto.articleId} no encontrado.`,
+      );
 
     const origin = await this.locationRepository.findOne({
       where: { id_ubicacion: dto.originId },
     });
     if (!origin)
-      throw new NotFoundException(`Ubicación de origen con ID ${dto.originId} no encontrada.`);
+      throw new NotFoundException(
+        `Ubicación de origen con ID ${dto.originId} no encontrada.`,
+      );
 
     const destination = await this.locationRepository.findOne({
       where: { id_ubicacion: dto.destinationId },
     });
     if (!destination)
-      throw new NotFoundException(`Ubicación de destino con ID ${dto.destinationId} no encontrada.`);
+      throw new NotFoundException(
+        `Ubicación de destino con ID ${dto.destinationId} no encontrada.`,
+      );
 
     const qrCode = `ORD-${randomUUID().toUpperCase()}`;
 
@@ -146,10 +154,9 @@ export class OrdersService {
       .orderBy('order.fecha_creacion', 'DESC');
 
     if (locationId) {
-      qb.where(
-        '(order.origin_id = :locId OR order.destination_id = :locId)',
-        { locId: locationId },
-      );
+      qb.where('(order.origin_id = :locId OR order.destination_id = :locId)', {
+        locId: locationId,
+      });
     }
 
     return qb.getMany();
@@ -165,7 +172,9 @@ export class OrdersService {
     });
 
     if (!order) {
-      throw new NotFoundException(`No se encontró ninguna orden con el QR: ${qrCode}`);
+      throw new NotFoundException(
+        `No se encontró ninguna orden con el QR: ${qrCode}`,
+      );
     }
 
     return order;
@@ -187,10 +196,14 @@ export class OrdersService {
 
     // Bloquear actualizaciones sobre estados terminales
     if (order.estado === MovementStatus.CANCELLED) {
-      throw new BadRequestException('No se puede actualizar una orden cancelada.');
+      throw new BadRequestException(
+        'No se puede actualizar una orden cancelada.',
+      );
     }
     if (order.estado === MovementStatus.COMPLETED) {
-      throw new BadRequestException('No se puede actualizar una orden ya completada.');
+      throw new BadRequestException(
+        'No se puede actualizar una orden ya completada.',
+      );
     }
 
     // etaDays es obligatorio cuando se aprueba (equivalente a CONFIRMADO)
