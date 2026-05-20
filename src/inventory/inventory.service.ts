@@ -48,4 +48,60 @@ export class InventoryService {
   remove(id: number) {
     return `This action removes a #${id} inventory`;
   }
+
+  // ─── GET /inventory?articleId=X ──────────────────────────────────────────
+
+  async findByArticle(articleId: number) {
+    const records = await this.inventoryRepository.find({
+      where: { article: { id_articulo: articleId } },
+      relations: ['article', 'location'],
+    });
+
+    if (!records.length) {
+      throw new NotFoundException(
+        `No se encontró inventario para el artículo con id ${articleId}`,
+      );
+    }
+
+    const article = records[0].article;
+
+    const totalStock = records.reduce(
+      (sum, r) => sum + Number(r.cantidad_actual),
+      0,
+    );
+
+    const locations = records
+      .filter((r) => Number(r.cantidad_actual) > 0)
+      .map((r) => ({
+        inventoryId: r.id_inventario,
+        location: {
+          id: r.location.id_ubicacion,
+          code: r.location.codigo_ubicacion,
+          name: r.location.nombre,
+          type: r.location.tipo_ubicacion,
+          status: r.location.estado,
+        },
+        stockActual: Number(r.cantidad_actual),
+        stockMinimo: Number(r.stock_minimo),
+        stockMaximo: Number(r.stock_maximo),
+        lastUpdated: r.ultima_actualizacion,
+      }));
+
+    return {
+      article: {
+        id: article.id_articulo,
+        code: article.codigo,
+        name: article.nombre,
+        description: article.description,
+        category: article.category,
+        size: article.size,
+        unitCost: Number(article.costo_unitario),
+        unitPrice: Number(article.precio_unitario),
+        isActive: article.is_active,
+      },
+      totalStock,
+      locationCount: locations.length,
+      locations,
+    };
+  }
 }
