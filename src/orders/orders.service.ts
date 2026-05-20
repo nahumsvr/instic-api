@@ -219,6 +219,32 @@ export class OrdersService {
       order.eta_days = dto.etaDays;
     }
 
+    // ── Al completar la orden, incrementar inventario en el destino ────────
+    if (dto.status === MovementStatus.COMPLETED) {
+      let inventoryRecord = await this.inventoryRepository.findOne({
+        where: {
+          article: { id_articulo: order.article.id_articulo },
+          location: { id_ubicacion: order.destination.id_ubicacion },
+        },
+      });
+
+      if (inventoryRecord) {
+        inventoryRecord.cantidad_actual =
+          Number(inventoryRecord.cantidad_actual) + Number(order.cantidad);
+        await this.inventoryRepository.save(inventoryRecord);
+      } else {
+        // El registro de inventario no existía todavía — lo creamos con la cantidad recibida
+        const newRecord = this.inventoryRepository.create({
+          article: order.article,
+          location: order.destination,
+          cantidad_actual: Number(order.cantidad),
+          stock_minimo: 0,
+          stock_maximo: 0,
+        });
+        await this.inventoryRepository.save(newRecord);
+      }
+    }
+
     return this.orderRepository.save(order);
   }
 }
