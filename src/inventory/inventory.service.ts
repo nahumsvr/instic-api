@@ -49,8 +49,25 @@ export class InventoryService {
     return `This action returns a #${id} inventory`;
   }
 
-  update(id: number, updateInventoryDto: UpdateInventoryDto) {
-    return `This action updates a #${id} inventory`;
+  async update(id: number, updateInventoryDto: UpdateInventoryDto) {
+    const record = await this.inventoryRepository.findOne({
+      where: { id_inventario: id },
+    });
+
+    if (!record) {
+      throw new NotFoundException(
+        `No se encontró un registro de inventario con ID ${id}.`,
+      );
+    }
+
+    if (updateInventoryDto.stock_minimo !== undefined) {
+      record.stock_minimo = updateInventoryDto.stock_minimo;
+    }
+    if (updateInventoryDto.stock_maximo !== undefined) {
+      record.stock_maximo = updateInventoryDto.stock_maximo;
+    }
+
+    return this.inventoryRepository.save(record);
   }
 
   remove(id: number) {
