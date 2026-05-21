@@ -4,7 +4,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { User } from './users/entities/user.entity';
 import { UsersModule } from './users/users.module';
 import { LocationsModule } from './locations/locations.module';
 import { InventoryModule } from './inventory/inventory.module';
@@ -22,14 +21,15 @@ import { OrdersModule } from './orders/orders.module';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: configService.get<string>('DB_HOST') || 'localhost',
-        port: configService.get<number>('DB_PORT', 5432),
-        username: configService.get<string>('DB_USERNAME') || 'postgres',
-        password: configService.get<string>('POSTGRES_PASSWORD'),
-        database: configService.get<string>('POSTGRES_DB'),
-        entities: [User],
+        url: configService.get<string>('DB_URL'),
+        ssl: true,
+        extra: {
+          ssl: {
+            rejectUnauthorized: false, // Obligatorio para evitar errores de certificados autofirmados en la nube
+          },
+        },
         autoLoadEntities: true,
-        synchronize: false, // Auto create/update tables (dev only)
+        synchronize: false, // ESTO DEBE ESTAR EN FALSE EN PRODUCCIÓN.
       }),
     }),
     AuthModule,
